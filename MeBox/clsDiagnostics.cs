@@ -6,8 +6,10 @@ using System.Diagnostics;
 using System.Windows.Forms;
 using clsBluetooth;
 
+
 namespace MeBox
 {
+
     public struct serialSettings_t
     {
         public int PortNum;
@@ -27,6 +29,7 @@ namespace MeBox
     }
     public class clsDiagnostics
     {
+     
         private const string ACK = "\x06";
         public const string NUL = "\x00";
         public const string CR = "\x0d";
@@ -36,7 +39,9 @@ namespace MeBox
         public const string DC1 = "\x11";
         public const string SPACE = "\x20";
         private const int SOH = 0x01;
-        private const int EOT = 0x10;
+        private const int EOT = 0x04;
+
+        private bool bLoopReadStatue;
 
         public delegate void OnReciveCallback(clsBlueTooth.BtData data);
         public event OnReciveCallback OnRecive;
@@ -172,6 +177,18 @@ namespace MeBox
         #endregion
 
         #region Properties
+
+        public bool ReadingLoopStatue
+        {
+            get
+            {
+                return bLoopReadStatue;
+            }
+            set
+            {
+                bLoopReadStatue = value;
+            }
+        }
 
         public serialSettings_t dSettings
         {
@@ -376,7 +393,7 @@ namespace MeBox
         //}
 
         #endregion
-
+            
        #region General
 
         public bool HSM_Send_Menu_Command(char type, string command, string parameters, char terminator1, char terminator2, ref string buffer)
@@ -1189,21 +1206,50 @@ namespace MeBox
 
         #endregion
 
+        public bool SetParameter(double dHeight,double dWeight)
+        {
+            string strCmd;
+            string strRead;
+            Serial_FLUSH(m_serport);
+
+            if (m_serport.IsOpen == false) return false;
+
+            byte []BY = new byte[3];
+
+            BY[0] = 170;
+            BY[1] = 170;
+            m_serport.Write(BY,0,2);
+
+            m_serport.Write(BitConverter.GetBytes(dHeight),0, BitConverter.GetBytes(dHeight).Length);
+            m_serport.Write(BitConverter.GetBytes(dWeight), 0, BitConverter.GetBytes(dWeight).Length);
+
+            BY[0] = 0xFF;
+            BY[1] = 0xFF;
+
+            DelayMS(1000);
+
+            strRead = m_serport.ReadExisting();
+
+            return true;
+            return strRead.Contains(ACK);
+
+        }
         public void ReadLoop()
         {
             string strRead = "";
             bool bSOH = false;
             bool bEOT = false;
 
-
+            bLoopReadStatue = true;
             //System.IO.StreamReader stmReader = new System.IO.StreamReader(mBluetoothStream,Encoding.Default);
 
             try
             {
 
-                while (m_serport.IsOpen)
+                while (m_serport.IsOpen )
                 {
-                    while (m_serport.BytesToRead > 0)
+
+                    while (m_serport.BytesToRead > 0 /*&& bLoopReadStatue == true*/)
                     {
                         char cR = (char)m_serport.ReadByte();
 

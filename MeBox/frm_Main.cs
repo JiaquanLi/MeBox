@@ -88,20 +88,49 @@ namespace MeBox
 
         private void frm_Main_Load(object sender, EventArgs e)
         {
+            bool bRes;
             //CheckForIllegalCrossThreadCalls = false;
             InitGraphPanel();
             InitObject();
 
             StartConnectFrom();
             StartUserInfoFrom();
+
+        RESET1:
+            bRes = mobjSerial.SetParameter(mUserInfo.Height, mUserInfo.Weight);
+            if (bRes == false)
+            {
+                if (MessageBox.Show("身高,体重参数设置失败", "参数设置", MessageBoxButtons.RetryCancel, MessageBoxIcon.Question) == DialogResult.Cancel)
+                {
+                    System.Environment.Exit(0);
+                }
+
+                goto RESET1;
+            }
+
             myData.dConsumption = 0;
             myData.dConsumption = 0;
 
         }
         private void btn_Back_Click(object sender, EventArgs e)
         {
+            bool bRes;
             this.Visible = false;
+
+            mobjSerial.ReadingLoopStatue = false;
             StartUserInfoFrom();
+RESET:
+            bRes = mobjSerial.SetParameter(mUserInfo.Height, mUserInfo.Weight);
+            if(bRes == false)
+            {
+                if(MessageBox.Show("身高,体重参数设置失败","参数设置",MessageBoxButtons.RetryCancel,MessageBoxIcon.Question) == DialogResult.Cancel)
+                {
+                    System.Environment.Exit(0);
+                }
+
+                goto RESET;
+            }
+            mobjSerial.ReadingLoopStatue = true;
             this.Visible = true;
         }
 
@@ -506,6 +535,8 @@ namespace MeBox
             }
             Console.WriteLine(data.angle_Pit + "  " + data.angle_Rol + "  " + data.angle_Yaw);
         }
+
+
 
     }
 }
