@@ -1220,8 +1220,8 @@ namespace MeBox
             BY[1] = 170;
             m_serport.Write(BY,0,2);
 
-            m_serport.Write(BitConverter.GetBytes(dHeight),0, BitConverter.GetBytes(dHeight).Length);
-            m_serport.Write(BitConverter.GetBytes(dWeight), 0, BitConverter.GetBytes(dWeight).Length);
+            m_serport.Write(BitConverter.GetBytes((float)dHeight),0, BitConverter.GetBytes((float)dHeight).Length);
+            m_serport.Write(BitConverter.GetBytes((float)dWeight),0, BitConverter.GetBytes((float)dWeight).Length);
 
             BY[0] = 0xFF;
             BY[1] = 0xFF;
